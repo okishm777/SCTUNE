@@ -82,8 +82,8 @@ SCTUNEEditor::SCTUNEEditor (SCTUNEProcessor& p)
     setupKnob (formant, "FORMANT COLOR");
     setupKnob (mix, "MIX");
 
-    key.addItemList ({ "C", "C#", "D", "D#", "E", "F",
-                       "F#", "G", "G#", "A", "A#", "B" }, 1);
+    key.addItemList ({ "C", "C# / Db", "D", "D# / Eb", "E", "F",
+                       "F# / Gb", "G", "G# / Ab", "A", "A# / Bb", "B" }, 1);
     scale.addItemList ({ "MAJOR", "MINOR", "CHROMATIC" }, 1);
     preset.addItemList ({ "HARD SC", "SOFT CLOUD", "ROBOT MODE" }, 1);
     preset.setSelectedId (1, juce::dontSendNotification);
