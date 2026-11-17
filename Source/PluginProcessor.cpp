@@ -2,18 +2,54 @@
 #include "PluginEditor.h"
 #include <cmath>
 
-juce::AudioProcessorValueTreeState::ParameterLayout SCTUNEProcessor::layout(){
- using F=juce::AudioParameterFloat; using I=juce::AudioParameterInt; using B=juce::AudioParameterBool;
- std::vector<std::unique_ptr<juce::RangedAudioParameter>> p;
- p.push_back(std::make_unique<F>("retune","Retune Speed",juce::NormalisableRange<float>(0,100),90));
- p.push_back(std::make_unique<F>("humanize","Humanize",juce::NormalisableRange<float>(0,100),0));
- p.push_back(std::make_unique<F>("formant","Formant Color",juce::NormalisableRange<float>(-100,100),0));
- p.push_back(std::make_unique<F>("mix","Mix",juce::NormalisableRange<float>(0,100),100));
- p.push_back(std::make_unique<I>("key","Key",0,11,0));
- p.push_back(std::make_unique<I>("scale","Scale",0,2,1));
- p.push_back(std::make_unique<B>("bypass","Bypass",false));
- return {p.begin(),p.end()};
+
+juce::AudioProcessorValueTreeState::ParameterLayout SCTUNEProcessor::layout()
+{
+    using F = juce::AudioParameterFloat;
+    using I = juce::AudioParameterInt;
+    using B = juce::AudioParameterBool;
+
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> p;
+
+    auto addFloat = [&p](const char* id,
+                         const char* name,
+                         float min,
+                         float max,
+                         float initial)
+    {
+        juce::NormalisableRange<float> range(min, max, 1.0f);
+
+        p.push_back(std::make_unique<F>(
+            juce::ParameterID(id, 1),
+            name,
+            range,
+            initial,
+            juce::AudioParameterFloatAttributes()
+                .withStringFromValueFunction(
+                    [](float value, int)
+                    {
+                        return juce::String(
+                            juce::roundToInt(value));
+                    })
+                .withValueFromStringFunction(
+                    [](const juce::String& text)
+                    {
+                        return text.getFloatValue();
+                    })));
+    };
+
+    addFloat("retune", "Retune Speed", 0, 100, 90);
+    addFloat("humanize", "Humanize", 0, 100, 0);
+    addFloat("formant", "Formant Color", -100, 100, 0);
+    addFloat("mix", "Mix", 0, 100, 100);
+
+    p.push_back(std::make_unique<I>("key", "Key", 0, 11, 0));
+    p.push_back(std::make_unique<I>("scale", "Scale", 0, 2, 1));
+    p.push_back(std::make_unique<B>("bypass", "Bypass", false));
+
+    return {p.begin(), p.end()};
 }
+
 SCTUNEProcessor::SCTUNEProcessor():AudioProcessor(BusesProperties().withInput("Input",juce::AudioChannelSet::stereo(),true).withOutput("Output",juce::AudioChannelSet::stereo(),true)),state(*this,nullptr,"SCTUNE",layout()){}
 bool SCTUNEProcessor::isBusesLayoutSupported(const BusesLayout& b) const { auto s=b.getMainOutputChannelSet(); return s==b.getMainInputChannelSet()&&(s==juce::AudioChannelSet::mono()||s==juce::AudioChannelSet::stereo()); }
 void SCTUNEProcessor::prepareToPlay(double sampleRate,int){sr=sampleRate; ring.setSize(2,16384);ring.clear();ringWrite=0;analysis.fill(0);analysisWrite=analysisCounter=0;phase=0;ratio=desiredRatio=1;}
