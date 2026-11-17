@@ -1,5 +1,6 @@
 
 #include "PluginEditor.h"
+#include "SCTUNELogo.h"
 #include <cmath>
 #include <array>
 #include <utility>
@@ -69,12 +70,14 @@ SCTUNEEditor::SCTUNEEditor(SCTUNEProcessor& p)
                 set("retune", 100);
                 set("humanize", 0);
                 set("mix", 100);
+                set("formant", 0);
                 break;
 
             case 2:
                 set("retune", 45);
                 set("humanize", 70);
                 set("mix", 75);
+                set("formant", 0);
                 break;
 
             case 3:
@@ -170,38 +173,11 @@ void SCTUNEEditor::paint(juce::Graphics& g)
     g.fillRoundedRectangle(10, 95, 960, 280, 16);
     g.fillRoundedRectangle(10, 385, 960, 185, 16);
 
-    // Purple SoundCloud-style logo
-    {
-        juce::Graphics::ScopedSaveState save(g);
-
-        const float x = 20.0f;
-        const float y = 29.0f;
-
-        g.setColour(purple);
-
-        g.fillEllipse(
-            x + 32.0f, y + 11.0f, 28.0f, 28.0f);
-
-        g.fillEllipse(
-            x + 46.0f, y + 4.0f, 33.0f, 35.0f);
-
-        g.fillEllipse(
-            x + 63.0f, y + 17.0f, 22.0f, 22.0f);
-
-        g.fillRoundedRectangle(
-            x + 31.0f, y + 26.0f,
-            54.0f, 14.0f, 7.0f);
-
-        for (int i = 0; i < 12; ++i)
-        {
-            float height = 8.0f + i * 2.4f;
-            float barX = x + i * 2.8f;
-            float barY = y + 40.0f - height;
-
-            g.fillRoundedRectangle(
-                barX, barY, 1.8f, height, 0.9f);
-        }
-    }
+    // SoundCloud-style SCTUNE logo
+    SCTUNELogo::draw(
+        g,
+        juce::Rectangle<float>(
+            22.0f, 24.0f, 92.0f, 48.0f));
 
     // Main title
     g.setColour(juce::Colours::white);
@@ -289,10 +265,10 @@ void SCTUNEEditor::paint(juce::Graphics& g)
     g.setColour(purple);
 
     g.fillRoundedRectangle(
-        48, 315, 140 * level, 5, 2);
+        48.0f, 315.0f, 140.0f * level, 5.0f, 2.0f);
 
     g.fillRoundedRectangle(
-        788, 315, 140 * output, 5, 2);
+        788.0f, 315.0f, 140.0f * output, 5.0f, 2.0f);
 
     // Detected pitch
     float pitch = processor.detectedPitch.load();
