@@ -7,4 +7,5 @@ juce_add_plugin(SCTUNE COMPANY_NAME SCTUNE BUNDLE_ID com.sctune.audio PLUGIN_MAN
 target_sources(SCTUNE PRIVATE Source/PluginProcessor.cpp Source/PluginProcessor.h Source/PluginEditor.cpp Source/PluginEditor.h)
 target_compile_features(SCTUNE PRIVATE cxx_std_17)
 target_compile_definitions(SCTUNE PUBLIC JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
+juce_generate_juce_header(SCTUNE)
 target_link_libraries(SCTUNE PRIVATE juce::juce_audio_utils juce::juce_dsp)
