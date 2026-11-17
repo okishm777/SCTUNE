@@ -59,6 +59,7 @@ void SCTUNEProcessor::prepareToPlay (double sampleRate, int)
     phase = 0.0f;
     ratio = desiredRatio = 1.0f;
     stablePitch = 0.0f;
+    wetBlend = 0.0f;
     detectedPitch.store (0.0f);
     inputMeter.store (0.0f);
     outputMeter.store (0.0f);
@@ -213,6 +214,13 @@ void SCTUNEProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     // Formant Color remains in saved presets, but is deliberately neutral until
     // a real formant-preserving stage is implemented.
 
+    // Calculate the one-pole smoothing coefficient once per audio block.
+    const float responseMs = 180.0f - 174.0f * retune;
+    const float smoothing = 1.0f - std::exp (-1000.0f
+                            / (static_cast<float> (sr) * responseMs));
+    const float blendSmoothing = 1.0f - std::exp (-1.0f
+                            / (0.005f * static_cast<float> (sr)));
+
     float inPeak = 0.0f, outPeak = 0.0f;
     for (int i = 0; i < count; ++i)
     {
@@ -261,16 +269,22 @@ void SCTUNEProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             }
         }
 
-        // Retune controls transition time only; strength is controlled by Humanize.
-        const float responseMs = 180.0f - 174.0f * retune;
-        const float smoothing = 1.0f - std::exp (-1000.0f
-                                  / (static_cast<float> (sr) * responseMs));
+        // Retune controls transition time only; Humanize controls correction depth.
         ratio += (desiredRatio - ratio) * smoothing;
+
+        // At ratio=1 the moving heads have different read delays and produce
+        // comb filtering. Crossfade to the fixed-latency read head near unity.
+        // This also avoids unnecessary coloration on already-correct notes.
+        const float deviation = std::abs (ratio - 1.0f);
+        const float targetBlend = juce::jlimit (0.0f, 1.0f,
+                                               (deviation - 0.002f) / 0.025f);
+        wetBlend += (targetBlend - wetBlend) * blendSmoothing;
 
         for (int ch = 0; ch < channels; ++ch)
         {
-            const float wet = shiftedSample (ch);
             const float dry = delayedDrySample (ch);
+            const float shifted = wetBlend > 0.00001f ? shiftedSample (ch) : dry;
+            const float wet = dry + (shifted - dry) * wetBlend;
             const float output = bypass ? dry : (dry * (1.0f - mix) + wet * mix);
             buffer.setSample (ch, i, output);
             outPeak = juce::jmax (outPeak, std::abs (output));
