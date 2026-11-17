@@ -1,6 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include <array>
+#include <atomic>
 
 class SCTUNEProcessor final : public juce::AudioProcessor
 {
@@ -50,8 +51,8 @@ private:
     float phase = 0.0f, ratio = 1.0f, desiredRatio = 1.0f;
     float stablePitch = 0.0f;
     int missingFrames = 0;
+    float wetBlend = 0.0f;
     double sr = 44100.0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SCTUNEProcessor)
 };
-
