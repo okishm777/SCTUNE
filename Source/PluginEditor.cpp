@@ -18,11 +18,39 @@ SCTUNEEditor::SCTUNEEditor(SCTUNEProcessor& p):AudioProcessorEditor(&p),processo
  aBypass=std::make_unique<BA>(processor.state,"bypass",bypass);
  startTimerHz(30);
 }
-void SCTUNEEditor::setupKnob(juce::Slider& s,const juce::String& name){s.setName(name);s.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);s.setTextBoxStyle(juce::Slider::TextBoxBelow,false,80,25);s.setColour(juce::Slider::rotarySliderFillColourId,purple);s.setColour(juce::Slider::rotarySliderOutlineColourId,juce::Colour(0xff41354d));s.setColour(juce::Slider::thumbColourId,juce::Colours::white);s.setColour(juce::Slider::textBoxTextColourId,juce::Colours::white);s.setColour(juce::Slider::textBoxBackgroundColourId,panel);addAndMakeVisible(s);}
+void SCTUNEEditor::setupKnob(juce::Slider& s,const juce::String& name){s.setName(name);s.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);s.setTextBoxStyle(juce::Slider::TextBoxBelow,false,80,25);s.setNumDecimalPlacesToDisplay(0);s.setColour(juce::Slider::rotarySliderFillColourId,purple);s.setColour(juce::Slider::rotarySliderOutlineColourId,juce::Colour(0xff41354d));s.setColour(juce::Slider::thumbColourId,juce::Colours::white);s.setColour(juce::Slider::textBoxTextColourId,juce::Colours::white);s.setColour(juce::Slider::textBoxBackgroundColourId,panel);addAndMakeVisible(s);}
 void SCTUNEEditor::paint(juce::Graphics& g){
  g.fillAll(juce::Colour(0xff08070c));
  g.setColour(panel);g.fillRoundedRectangle(10,10,960,75,18);g.fillRoundedRectangle(10,95,960,280,16);g.fillRoundedRectangle(10,385,960,185,16);
- g.setColour(purple);g.setFont(juce::Font(juce::FontOptions(40,juce::Font::bold)));g.drawText("☁",27,18,65,55,juce::Justification::centred);
+ 
+ // SCTUNE SoundCloud-style logo
+ {
+     juce::Graphics::ScopedSaveState save(g);
+
+     const float x = 27.0f;
+     const float y = 29.0f;
+
+     // Purple cloud
+     g.setColour(juce::Colour(0xffa12dff));
+
+     g.fillEllipse(x + 32.0f, y + 11.0f, 28.0f, 28.0f);
+     g.fillEllipse(x + 46.0f, y + 4.0f, 33.0f, 35.0f);
+     g.fillEllipse(x + 63.0f, y + 17.0f, 22.0f, 22.0f);
+     g.fillRoundedRectangle(x + 31.0f, y + 26.0f,
+                            54.0f, 14.0f, 7.0f);
+
+     // Sound-wave bars
+     for (int i = 0; i < 12; ++i)
+     {
+         float height = 8.0f + i * 2.4f;
+         float barX = x + i * 2.8f;
+         float barY = y + 40.0f - height;
+
+         g.fillRoundedRectangle(barX, barY,
+                                1.8f, height, 0.9f);
+     }
+ }
+
  g.setColour(juce::Colours::white);g.drawText("SCTUNE",105,18,300,55,juce::Justification::centredLeft);
  g.setFont(juce::Font(juce::FontOptions(13)));g.setColour(muted);g.drawText("PRESET",490,22,100,20,juce::Justification::centredLeft);
  // Animated waveform panel with live input/output peak meters.
